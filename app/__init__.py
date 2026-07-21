@@ -1,0 +1,1 @@
+"""DebateStack application package."""

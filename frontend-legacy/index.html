@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Convene</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- NAV -->
+    <nav id="nav">
+      <span class="logo">Convene</span>
+      <div id="nav-links">
+        <a href="#" id="nav-debate" class="hidden" onclick="showView('debate')">New Debate</a>
+        <a href="#" id="nav-history" class="hidden" onclick="showView('history')">History</a>
+        <span id="nav-user" class="hidden"></span>
+        <a href="#" id="nav-logout" class="hidden" onclick="logout()">Logout</a>
+        <a href="#" id="nav-login" onclick="showView('login')">Login</a>
+      </div>
+    </nav>
+
+    <!-- AUTH: SIGNUP -->
+    <div id="view-signup" class="view hidden">
+      <div class="card">
+        <h2>Sign Up</h2>
+        <form onsubmit="handleSignup(event)">
+          <input type="email" id="signup-email" placeholder="Email" required />
+          <input type="password" id="signup-password" placeholder="Password (min 8 chars)" minlength="8" required />
+          <button type="submit">Sign Up</button>
+        </form>
+        <p class="switch">Already have an account? <a href="#" onclick="showView('login')">Login</a></p>
+        <div id="signup-msg" class="msg hidden"></div>
+      </div>
+    </div>
+
+    <!-- AUTH: LOGIN -->
+    <div id="view-login" class="view hidden">
+      <div class="card">
+        <h2>Login</h2>
+        <form onsubmit="handleLogin(event)">
+          <input type="email" id="login-email" placeholder="Email" required />
+          <input type="password" id="login-password" placeholder="Password" required />
+          <button type="submit">Login</button>
+        </form>
+        <p class="switch">Don't have an account? <a href="#" onclick="showView('signup')">Sign Up</a></p>
+        <div id="login-msg" class="msg hidden"></div>
+      </div>
+    </div>
+
+    <!-- DEBATE CREATION -->
+    <div id="view-debate" class="view hidden">
+      <div class="card wide">
+        <h2>Create a Debate</h2>
+        <form onsubmit="handleCreateDebate(event)">
+          <label>Preset</label>
+          <select id="debate-preset" required></select>
+
+          <label>Question</label>
+          <input type="text" id="debate-question" placeholder="e.g. Should we use Postgres or MongoDB?" required />
+
+          <label>Option 1</label>
+          <input type="text" id="debate-opt1" placeholder="e.g. Postgres" required />
+
+          <label>Option 2</label>
+          <input type="text" id="debate-opt2" placeholder="e.g. MongoDB" required />
+
+          <label>Option 3 (optional)</label>
+          <input type="text" id="debate-opt3" placeholder="e.g. Both" />
+
+          <label>Team Size</label>
+          <input type="number" id="debate-team" value="3" min="1" required />
+
+          <label>Timeline</label>
+          <input type="text" id="debate-timeline" value="6 months" required />
+
+          <label>Budget (optional)</label>
+          <input type="text" id="debate-budget" placeholder="e.g. lean" />
+
+          <button type="submit">Start Debate</button>
+        </form>
+        <div id="debate-msg" class="msg hidden"></div>
+      </div>
+    </div>
+
+    <!-- DEBATE LIVE + RESULT -->
+    <div id="view-live" class="view hidden">
+      <div class="card wide">
+        <div id="live-header">
+          <h2 id="live-title">Debate in Progress...</h2>
+          <span id="live-status" class="badge">analyzing</span>
+        </div>
+
+        <div id="live-feed"></div>
+
+        <div id="live-result" class="hidden">
+          <h3>Result</h3>
+          <div id="result-winner"></div>
+          <div id="result-breakdown"></div>
+          <div id="result-rationale"></div>
+          <div id="result-cross-exam"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="view-history" class="view hidden">
+      <div class="card wide">
+        <h2>Your Debates</h2>
+        <div id="history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
