@@ -215,12 +215,18 @@ class OAuthExchangeRequest(BaseModel):
 
 async def verify_supabase_token(token: str) -> dict | None:
     supabase_url = os.getenv("SUPABASE_URL", "https://zxnfcbojuxbdqzryqtaw.supabase.co")
-    headers = {"Authorization": f"Bearer {token}"}
+    supabase_key = os.getenv("SUPABASE_ANON_KEY", "sb_publishable_myU9f34KZ5iNyLiKet5-cQ_y0xc0_PC")
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "apikey": supabase_key
+    }
     async with httpx.AsyncClient() as client:
         try:
             res = await client.get(f"{supabase_url}/auth/v1/user", headers=headers, timeout=5.0)
             if res.status_code == 200:
                 return res.json()
+            else:
+                logger.error("Supabase user verification returned status %d: %s", res.status_code, res.text)
         except Exception as e:
             logger.error("Supabase user verification failed: %s", e)
     return None
@@ -229,8 +235,6 @@ async def verify_supabase_token(token: str) -> dict | None:
 @router.post("/oauth-exchange", response_model=AuthResponse)
 async def oauth_exchange(body: OAuthExchangeRequest) -> AuthResponse:
     pool = await get_pool()
-    if pool is None:
-        raise HTTPException(status_code=503, detail="Database not available")
 
     user_info = await verify_supabase_token(body.access_token)
     if user_info is None:
@@ -240,22 +244,26 @@ async def oauth_exchange(body: OAuthExchangeRequest) -> AuthResponse:
     if not email:
         raise HTTPException(status_code=400, detail="Missing email in OAuth profile")
 
-    row = await pool.fetchrow(
-        "SELECT id FROM users WHERE email = $1", email
-    )
-    if row is None:
-        user_id = str(uuid.uuid4())
-        await pool.execute(
-            """
-            INSERT INTO users (id, email, password_hash, verified, created_at)
-            VALUES ($1, $2, $3, true, now())
-            """,
-            user_id,
-            email,
-            "",
+    if pool is not None:
+        row = await pool.fetchrow(
+            "SELECT id FROM users WHERE email = $1", email
         )
+        if row is None:
+            user_id = str(uuid.uuid4())
+            await pool.execute(
+                """
+                INSERT INTO users (id, email, password_hash, verified, created_at)
+                VALUES ($1, $2, $3, true, now())
+                """,
+                user_id,
+                email,
+                "",
+            )
+        else:
+            user_id = str(row["id"])
     else:
-        user_id = str(row["id"])
+        # Fallback: Deterministic UUID based on email when database is offline
+        user_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, email))
 
     token = issue_token(user_id)
     return AuthResponse(access_token=token, user_id=user_id)
