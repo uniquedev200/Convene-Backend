@@ -41,3 +41,6 @@ desktop.ini
 # Databases (local dev)
 *.sqlite
 *.db
+
+# Frontend
+frontend/
